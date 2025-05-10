@@ -9,6 +9,9 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
+  
+  # *Enable flakes and nixf-command
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -43,17 +46,18 @@
   };
 
   # Enable the X11 windowing system.
-  services.xserver.enable = true;
+  #services.xserver.enable = true;
+  services.xserver.enable = false;
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  #services.xserver.displayManager.gdm.enable = true;
+  #services.xserver.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "au";
-    variant = "";
-  };
+  #services.xserver.xkb = {
+  #  layout = "au";
+  #  variant = "";
+  #};
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -77,15 +81,28 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
+  services.gvfs.enable = true;
+  programs.thunar = {
+  	enable = true;
+	plugins = with pkgs.xfce; [
+		thunar-archive-plugin
+		thunar-volman
+	];
+  };
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.mark = {
     isNormalUser = true;
     description = "mark";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "video" "audio"];
+    shell = pkgs.zsh;
     packages = with pkgs; [
     #  thunderbird
     ];
   };
+
+  # = TY auto-login
+  services.getty.autologinUser = "mark";
 
   # Install firefox.
   programs.firefox.enable = true;
@@ -93,6 +110,16 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
+  # *Hyprland
+  programs.hyprland = {
+    enable = true;
+    xwayland.enable = true;
+  };
+
+  programs.zsh = {
+    enable = true;
+  };
+  
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -100,7 +127,26 @@
   wget
   neovim
   git
-  ];
+  foot              	# Terminal
+  waybar            	# Status bar
+  rofi-wayland  	# Application lanucher
+  wl-clipboard  	# Clipboard functionality
+  hyprland      	# Already enabled but putting in path anyway
+  firefox       	# Web Browser
+  yazi          	# Terminal file manager
+  xfce.thunar
+  xfce.thunar-archive-plugin
+  xfce.thunar-volman
+  xfce.tumbler  	# For Thunar thumbnails
+  ffmpegthumbnailer 	# For video thumbnails
+  gvfs			# For trash support, mounts
+  zsh                   # Shell
+  starship              # Shell enhencement
+  wpgtk
+  python3
+  swww
+  ffmpeg
+];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -129,5 +175,4 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.11"; # Did you read the comment?
   
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 }
